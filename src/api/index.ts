@@ -1,20 +1,21 @@
 import type { Sword, Swordsman, Sect, ApiResponse, SwordListResponse, SwordFilterParams } from '../types';
+import { registerSwords } from '../audio/jianmingCore';
 
 const API_BASE = '/api';
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${url}`, init);
   const data: ApiResponse<T> = await response.json();
-  
+
   if (data.code !== 200) {
     throw new Error(data.message);
   }
-  
+
   return data.data;
 }
 
 export const swordApi = {
-  getSwords: (params: SwordFilterParams = {}): Promise<SwordListResponse> => {
+  getSwords: async (params: SwordFilterParams = {}): Promise<SwordListResponse> => {
     const query = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -22,16 +23,22 @@ export const swordApi = {
       }
     });
     const queryString = query.toString();
-    return request<SwordListResponse>(`/swords${queryString ? `?${queryString}` : ''}`);
+    const res = await request<SwordListResponse>(`/swords${queryString ? `?${queryString}` : ''}`);
+    registerSwords(res.list); // 注册进剑鸣核心，供 window.JianMing.params(id) 断言
+    return res;
   },
-  
-  getPopularSwords: (limit?: number): Promise<Sword[]> => {
+
+  getPopularSwords: async (limit?: number): Promise<Sword[]> => {
     const query = limit ? `?limit=${limit}` : '';
-    return request<Sword[]>(`/swords/popular${query}`);
+    const res = await request<Sword[]>(`/swords/popular${query}`);
+    registerSwords(res);
+    return res;
   },
-  
-  getSwordById: (id: string): Promise<Sword> => {
-    return request<Sword>(`/swords/${id}`);
+
+  getSwordById: async (id: string): Promise<Sword> => {
+    const res = await request<Sword>(`/swords/${id}`);
+    registerSwords([res]);
+    return res;
   },
 };
 

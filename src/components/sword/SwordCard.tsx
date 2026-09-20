@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Flame, Eye } from 'lucide-react';
 import type { Sword } from '../../types';
+import SwordResonanceButton from './SwordResonanceButton';
 
 interface SwordCardProps {
   sword: Sword;
@@ -32,6 +33,10 @@ export default function SwordCard({ sword, delay = 0 }: SwordCardProps) {
           <span>{sword.popularity.toLocaleString()}</span>
         </div>
         
+        <div className="absolute bottom-3 left-3">
+          <SwordResonanceButton sword={sword} />
+        </div>
+
         <div className="absolute bottom-3 right-3 flex items-center gap-1 text-ink-100 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <Eye className="w-3 h-3" />
           <span>查看详情</span>

@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, Building2, Flame, BookOpen, History, Sparkles, Share2, Heart } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Building2, Flame, BookOpen, History, Sparkles, Share2, Heart, AudioLines } from 'lucide-react';
 import { swordApi } from '../api';
 import type { Sword } from '../types';
 import { cn } from '@/lib/utils';
+import { soundEngine } from '@/audio/soundEngine';
+import { deriveResonanceParams } from '@/audio/jianmingCore';
 
 const ATTRIBUTE_LABELS: Record<string, { label: string; color: string }> = {
   sharpness: { label: '锋利', color: 'from-cinnabar-500 to-cinnabar-700' },
@@ -19,6 +21,7 @@ export default function SwordDetail() {
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const engineState = useSyncExternalStore(soundEngine.subscribe, soundEngine.getState);
 
   useEffect(() => {
     if (!id) return;
@@ -65,6 +68,8 @@ export default function SwordDetail() {
       </div>
     );
   }
+
+  const resonance = deriveResonanceParams(sword.attributes, sword.id, sword.name);
 
   return (
     <div className="min-h-screen pt-16">
@@ -151,6 +156,56 @@ export default function SwordDetail() {
               <div className="scroll-container">
                 <p className="font-song text-lg text-ink-700 leading-loose first-letter:text-5xl first-letter:font-brush first-letter:text-cinnabar-600 first-letter:float-left first-letter:mr-3">
                   {sword.description}
+                </p>
+              </div>
+            </section>
+
+            <div className="ink-divider" />
+
+            <section className="animate-fade-in-up" style={{ animationDelay: '0.35s', animationFillMode: 'forwards', opacity: 0 }}>
+              <div className="flex items-center gap-3 mb-6">
+                <AudioLines className="w-6 h-6 text-cinnabar-600" />
+                <h2 className="font-brush text-3xl text-ink-900">剑鸣 · 听其自鸣</h2>
+              </div>
+              <div className="ink-card p-6">
+                <p className="font-song text-sm text-ink-600 leading-relaxed mb-5">
+                  此剑之声不借录音：锋利定音色之明暗与泛音多寡，硬度定基频高低与衰减缓急，
+                  柔韧定颤音幅度，工艺定包络细腻——皆由振荡器与噪声现场合成，并同步驱动右下角水墨画面。
+                </p>
+                <div className="flex flex-wrap items-center gap-4 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => soundEngine.play(sword)}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-ink-900 text-ink-100 font-song tracking-[0.2em] hover:bg-ink-800 transition-colors"
+                  >
+                    <AudioLines className="w-4 h-4 text-gold-400" />
+                    听其自鸣
+                  </button>
+                  {!engineState.enabled && (
+                    <span className="font-song text-xs text-cinnabar-600">
+                      浏览器策略需先开声：请点击右下角「开声 · 听剑」
+                    </span>
+                  )}
+                </div>
+                <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+                  {[
+                    { label: '基频（硬度）', value: `${resonance.baseFreq.toFixed(2)} Hz` },
+                    { label: '时长', value: `${resonance.duration.toFixed(3)} s` },
+                    { label: '泛音数（锋利）', value: `${resonance.harmonics} 个` },
+                    { label: '滤波截止（锋利）', value: `${resonance.brightness.toFixed(0)} Hz` },
+                    { label: '颤音幅度（柔韧）', value: `±${resonance.vibratoDepth.toFixed(1)} 音分` },
+                    { label: '包络采样点（工艺）', value: `${resonance.envPoints} 点` },
+                  ].map((item) => (
+                    <div key={item.label} className="border-l-2 border-ink-300 pl-3">
+                      <dt className="font-song text-xs text-ink-500">{item.label}</dt>
+                      <dd className="font-song text-lg text-ink-900 tabular-nums">{item.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-6 font-song text-xs text-ink-400 leading-relaxed">
+                  可断言数据接口：<code className="bg-ink-100 px-1.5 py-0.5">window.JianMing.params('{sword.id}')</code>
+                  {' '}→ baseFreq {resonance.baseFreq} Hz · duration {resonance.duration} s · harmonics {resonance.harmonics}；
+                  同剑参数由属性确定推导，不含随机。
                 </p>
               </div>
             </section>
