@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, User, Building2, Flame, BookOpen, History, Sparkles, Share2, Heart } from 'lucide-react';
 import { swordApi } from '../api';
 import type { Sword } from '../types';
+import SwordResonanceSection from '../components/sword/SwordResonanceSection';
 import { cn } from '@/lib/utils';
 
 const ATTRIBUTE_LABELS: Record<string, { label: string; color: string }> = {
@@ -154,6 +155,10 @@ export default function SwordDetail() {
                 </p>
               </div>
             </section>
+
+            <div className="ink-divider" />
+
+            <SwordResonanceSection sword={sword} />
 
             <div className="ink-divider" />
 

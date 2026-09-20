@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Flame, Eye } from 'lucide-react';
+import { Flame, Eye, Volume2 } from 'lucide-react';
 import type { Sword } from '../../types';
+import { useResonanceStore } from '@/stores/resonanceStore';
 
 interface SwordCardProps {
   sword: Sword;
@@ -8,6 +9,15 @@ interface SwordCardProps {
 }
 
 export default function SwordCard({ sword, delay = 0 }: SwordCardProps) {
+  const ringSword = useResonanceStore((s) => s.ringSword);
+  const isRinging = useResonanceStore((s) => s.playing && s.swordId === sword.id);
+
+  const handleRing = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void ringSword(sword);
+  };
+
   return (
     <Link
       to={`/swords/${sword.id}`}
@@ -36,6 +46,17 @@ export default function SwordCard({ sword, delay = 0 }: SwordCardProps) {
           <Eye className="w-3 h-3" />
           <span>查看详情</span>
         </div>
+
+        <button
+          type="button"
+          onClick={handleRing}
+          aria-label={`聆听${sword.name}的剑鸣`}
+          data-testid={`ring-sword-${sword.id}`}
+          className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1.5 bg-ink-900/60 backdrop-blur-sm text-ink-100 text-xs font-song transition-colors duration-300 hover:bg-cinnabar-600 md:opacity-0 md:group-hover:opacity-100"
+        >
+          <Volume2 className="w-3 h-3" />
+          <span>{isRinging ? '鸣响中' : '剑鸣'}</span>
+        </button>
       </div>
       
       <div className="p-4">

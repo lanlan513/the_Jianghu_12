@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ResonanceStage from "@/components/sword/ResonanceStage";
 import Home from "@/pages/Home";
 import SwordList from "@/pages/SwordList";
 import SwordDetail from "@/pages/SwordDetail";
@@ -22,6 +23,7 @@ export default function App() {
           </Routes>
         </main>
         <Footer />
+        <ResonanceStage />
       </div>
     </Router>
   );
